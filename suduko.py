@@ -3,7 +3,7 @@ p.init()
 screen=p.display.set_mode((450,550))
 p.display.set_caption("sudoku solver")
 
-def solve():
+def precheck():
     x=0
     y=0
     done=True
@@ -16,44 +16,48 @@ def solve():
             y+=1
         if y==9:
             break
-    print(used)
-    ok1=0
-    c12=0
-    while done:
-        b,c=used[ok1]
-        for i in range(c12+1,10):
-            done1=check(b,c,i)
-            if done1==True:
-                break
+ok1=0
+c12=0
+done1=True
+def solve():
+    global ok1,c12,done1
+    b,c=used[ok1]
+    for i in range(c12+1,10):
+        done1=check(b,c,i)
         if done1==True:
-            ok1+=1
-            c12=0
-        elif done1==False:
-            mat[c][b]=0
-            ok1-=1
-            a1,b1=used[ok1]
-            c12=mat[b1][a1]
-        if used[ok1]==used[-1]:
             break
+    if done1==True:
+        ok1+=1
+        c12=0
+    elif done1==False:
+        mat[c][b]=0
+        ok1-=1
+        a1,b1=used[ok1]
+        c12=mat[b1][a1]
+
 ok=True
+sol=False
 class button:
     def __init__(self,x,y,st):
         self.x=x
         self.y=y
         self.st=st
         self.bool=True
-        self.color1=(75,194,197)
-        self.color2=(52,132,152)
-
+        if self.st=="Solve":
+            self.color1=(246,208,77)
+            self.color2=(139,194,76)
+        else :
+            self.color1=(46,148,185)
+            self.color2=(91,231,196)
     def check(self,x1,y1,click):
-        global ok
+        global ok,sol
         if self.x-75<x1<self.x+75 and self.y-20<y1<self.y+20:
             self.bool=False
             if click==1:
                 if self.st=="Solve"  and ok:
                     ok=False
-                    print("mujhe bulaya")
-                    solve()
+                    precheck()
+                    sol=True
                 if self.st=="Reset":
                     ok=True
                     x=0
@@ -110,7 +114,11 @@ mat=[
 def draw_no(ok,x,y):
     if ok!=0:
         font=p.font.Font('freesansbold.ttf',32)
-        text=font.render(str(ok),True,(0,0,0))
+        if ok>9:
+            ok=ok//10
+            text=font.render(str(ok),True,(0,200,0))
+        else :
+            text=font.render(str(ok),True,(0,0,0))
         textRect=text.get_rect()
         textRect.center=(25+50*x,25+50*y)
         screen.blit(text,textRect)
@@ -119,25 +127,36 @@ def check(x,y,i):
     hor=[]
     ver=[]
     box=[]
-    x1=x//3
-    y1=y//3
+    x1=x//3*3
+    y1=y//3*3
+    maxx=x1+3
+    maxy=y1+3
     while True:
-        if mat[y1][x1]!=0:
-            box.append(mat[y1][x1])
+        ok=mat[y1][x1]
+        if ok!=0:
+            if ok>9:
+                ok=ok//10
+            box.append(ok)
         x1+=1
-        if x1==3:
-            x1=0
+        if x1==maxx:
+            x1-=3
             y1+=1
-        if y1==3:
+        if y1==maxy:
             break
     for ho in range(9):
-        if mat[y][ho]!=0:
-            hor.append(mat[y][ho])
+        ok=mat[y][ho]
+        if ok!=0:
+            if ok>9:
+                ok=ok//10
+            hor.append(ok)
     for ve in range(9):
-        if mat[ve][x]!=0:
-            ver.append(mat[ve][x])
+        ok = mat[ve][x]
+        if ok!=0:
+            if ok>9:
+                ok=ok//10
+            ver.append(ok)
     if i not in (set(box+hor+ver)):
-        mat[y][x]=i
+        mat[y][x]=i                    #issue with color
         return True
     else:
         return False
@@ -166,6 +185,10 @@ while not done:
                     done1=False
     screen.fill((250,250,250))
     grid_draw()
+    if sol:
+        solve()
+        if ok1==len(used):
+            sol=False
     x=0
     y=0
     while True:
