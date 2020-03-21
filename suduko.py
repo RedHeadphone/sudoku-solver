@@ -33,7 +33,10 @@ def solve():
         mat[c][b]=0
         ok1-=1
         a1,b1=used[ok1]
-        c12=mat[b1][a1]
+        ok=mat[b1][a1]
+        if ok>9:
+            ok=ok//10
+        c12=ok
 
 ok=True
 sol=False
@@ -156,7 +159,7 @@ def check(x,y,i):
                 ok=ok//10
             ver.append(ok)
     if i not in (set(box+hor+ver)):
-        mat[y][x]=i                    #issue with color
+        mat[y][x]=i*10
         return True
     else:
         return False
@@ -204,5 +207,4 @@ while not done:
     rese.check(mo0,mo1,mo[0])
     rese.draw_button()
     p.display.update()
-
 p.quit()
