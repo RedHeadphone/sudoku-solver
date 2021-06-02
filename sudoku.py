@@ -1,15 +1,24 @@
 import pygame as p
+import time
 p.init()
 screen=p.display.set_mode((450,550))
 p.display.set_caption("sudoku solver")
 
 def precheck():
+    global cantsolve,sol,used,lt
     x=0
     y=0
     done=True
     while done:
         if mat[y][x]==0:
             used.append((x,y))
+        else:
+            if not check(x,y,mat[y][x],False):
+                cantsolve=True
+                lt=time.time()
+                sol=False
+                used=[]
+                break
         x+=1
         if x==9:
             x=0
@@ -23,7 +32,7 @@ def solve():
     global ok1,c12,done1
     b,c=used[ok1]
     for i in range(c12+1,10):
-        done1=check(b,c,i)
+        done1=check(b,c,i,True)
         if done1==True:
             break
     if done1==True:
@@ -53,18 +62,20 @@ class button:
             self.color1=(46,148,185)
             self.color2=(91,231,196)
     def check(self,x1,y1,click):
-        global ok,sol
+        global ok,sol,used
         if self.x-75<x1<self.x+75 and self.y-20<y1<self.y+20:
             self.bool=False
             if click==1:
                 if self.st=="Solve"  and ok:
                     ok=False
-                    precheck()
                     sol=True
+                    precheck()
                 if self.st=="Reset":
+                    sol=False
                     ok=True
                     x=0
                     y=0
+                    used=[]
                     while True:
                         mat[y][x]=0
                         x+=1
@@ -101,6 +112,7 @@ def grid_draw():
         else :
             p.draw.line(screen,(0,0,0),(y*50,0),(y*50,450),2)
 
+cantsolve=False
 used=[]
 mat=[
         [7, 8, 0, 4, 0, 0, 1, 2, 0],
@@ -126,7 +138,7 @@ def draw_no(ok,x,y):
         textRect.center=(25+50*x,25+50*y)
         screen.blit(text,textRect)
 
-def check(x,y,i):
+def check(x,y,i,ss):
     hor=[]
     ver=[]
     box=[]
@@ -136,7 +148,7 @@ def check(x,y,i):
     maxy=y1+3
     while True:
         ok=mat[y1][x1]
-        if ok!=0:
+        if ok!=0 and (x!=x1 and y!=y1):
             if ok>9:
                 ok=ok//10
             box.append(ok)
@@ -147,45 +159,55 @@ def check(x,y,i):
         if y1==maxy:
             break
     for ho in range(9):
+        if ho==x:
+            continue
         ok=mat[y][ho]
         if ok!=0:
             if ok>9:
                 ok=ok//10
             hor.append(ok)
     for ve in range(9):
+        if ve==y:
+            continue
         ok = mat[ve][x]
         if ok!=0:
             if ok>9:
                 ok=ok//10
             ver.append(ok)
     if i not in (set(box+hor+ver)):
-        mat[y][x]=i*10
+        if ss:
+            mat[y][x]=i*10
         return True
     else:
         return False
 
 solv=button(337,500,"Solve")
 rese=button(112,500,"Reset")
+timer=0
+lt=0
 done=False
+entering=False
+mm0,mm1=None,None
 while not done:
     for event in p.event.get():
         if event.type==p.QUIT:
             done=True
     mo=p.mouse.get_pressed()
     mo0,mo1=p.mouse.get_pos()
-    if mo[0]==1 and mo1<450:
-        done1=True
-        while done1:
-            keypress=p.key.get_pressed()
-            p.draw.rect(screen,(0,0,255),[(mo0//50*50,mo1//50*50),(51,51)],3)
-            p.display.update()
-            for event in p.event.get():
-                if event.type==p.QUIT:
-                    done1=False
-            for i in range(48,58):
-                if keypress[i]:
-                    mat[mo1//50][mo0//50]=i-48
-                    done1=False
+    if (mo[0]==1 and mo1<450):
+        entering=True
+        mm0,mm1=mo0,mo1
+    if entering:
+        keypress=p.key.get_pressed()
+        for i in range(p.K_0,p.K_9+1):
+            if keypress[i]:
+                mat[mm1//50][mm0//50]=i-p.K_0
+                entering=False
+        keypad=[p.K_KP0, p.K_KP1, p.K_KP2, p.K_KP3, p.K_KP4, p.K_KP5, p.K_KP6, p.K_KP7, p.K_KP8, p.K_KP9]
+        for i in range(len(keypad)):
+            if keypress[keypad[i]]:
+                mat[mm1//50][mm0//50]=i
+                entering=False
     screen.fill((250,250,250))
     grid_draw()
     if sol:
@@ -202,6 +224,21 @@ while not done:
             y+=1
         if y==9:
             break
+    if cantsolve:
+        timer+=time.time() - lt
+        lt=time.time()
+        if timer>4:
+            timer=0
+            cantsolve=False
+            ok=True
+        font = p.font.Font('freesansbold.ttf',32)
+        text = font.render("can't solve this sudoku", True, (0,0,0)) 
+        textRect = text.get_rect()
+        textRect.center = (225, 275)
+        p.draw.rect(screen,(255,50,50),[(225-200,275-20),(400,40)])
+        screen.blit(text, textRect)
+    if entering:
+        p.draw.rect(screen,(0,0,255),[(mm0//50*50,mm1//50*50),(51,51)],3)
     solv.check(mo0,mo1,mo[0])
     solv.draw_button()
     rese.check(mo0,mo1,mo[0])
