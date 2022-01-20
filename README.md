@@ -1,7 +1,26 @@
 # sudoku-solver
 
-how to enter your number in box :
+Solves given sudoku puzzle using back tracking algorithm
 
-- To change number of box put cursor on box and left click (it will get highlighted).
-- Press number on your keyboard you want to enter.If want to remove number press 0.
+<p align="center">
+  <img alt="demo" height="500px" src="assets/demo.gif"/>
+</p>
+
+## Requirements
+
+- python v3.5+
+  - pygame v2.1.0+
+
+## Usage
+
+To launch the application
+```bash
+python3 sudoku.py
+```
+
+## Controls
+
+- To alter or add a number in a box, left-click it so it becomes highlighted, then press the number you wish to input on your keyboard.
+- To remove the number, press the backspace or 0 number key on your keyboard.
+- To solve the sudoku, click the "solve" button and to clear all the numbers, click the "reset" button.
 
