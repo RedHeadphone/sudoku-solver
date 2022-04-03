@@ -3,7 +3,9 @@
 Solves given sudoku puzzle using back tracking algorithm
 
 <p align="center">
-  <img alt="demo" height="500px" src="assets/demo.gif"/>
+  <kbd>
+    <img alt="demo" height="500px" src="assets/demo.gif"/>
+   </kbd>
 </p>
 
 ## Requirements
